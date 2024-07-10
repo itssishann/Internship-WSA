@@ -100,14 +100,15 @@ const userLogin = async(req, res)=>{
                 message: "Wrong password!"
             });
         }
-        const userId = userExists._id;
-        generateTokenAndSetCookie(res,userId)
-        const token = jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: '30d' }); 
-        //token again genrated because we might need if the instrcutor use localStorage to store the token
+        const payload = {
+            id: userExists._id,
+            userName: userExists.name
+        }
+        generateTokenAndSetCookie(res,payload)
         res.json({
             message: "Logged in successfully",
-            userId: userExists._id,
-            token
+            // userId: userExists._id
+            
         })
     } catch (error) {
         res.status(401).json({
@@ -115,13 +116,18 @@ const userLogin = async(req, res)=>{
         })
     }
 }
-const userLogout = async (req,res)=>{
-   res.cookies("jwt","")
-}
+const userLogout = async (req, res) => {
+    try {
+        res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'Strict' });
+        res.json({ message: 'Logged out successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error logging out' });
+    }
+};
 
 
 module.exports = {
     signup,
     userLogin,
-    // userLogout
+    userLogout
 };
